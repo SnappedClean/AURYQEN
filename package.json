@@ -1,0 +1,11 @@
+{
+  "name": "auryqen-public-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Public, dependency-free, local-first executable AURYQEN workspace",
+  "scripts": {
+    "test": "node --test tests/runtime.test.mjs",
+    "check": "node --check runtime.mjs && node --check app.mjs"
+  }
+}
