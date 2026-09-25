@@ -44,7 +44,7 @@ jobs:
       - name: Stage public files only
         run: |
           mkdir -p dist
-          cp index.html app.mjs runtime.mjs style.css README.md dist/
+          cp index.html app.mjs cloud.mjs runtime.mjs style.css README.md dist/
           touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
