@@ -1,0 +1,23 @@
+name: AURYQEN cloud task
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  execute:
+    if: ${{ github.event.issue.user.login == github.repository_owner && startsWith(github.event.issue.body, '<!-- AURYQEN-CLOUD-TASK-V1 -->') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run bounded capability and publish actual result
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/cloud-task.mjs
