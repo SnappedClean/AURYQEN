@@ -60,7 +60,7 @@ function render(){
  document.querySelectorAll('.nav [data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===page);b.setAttribute('aria-current',b.dataset.view===page?'page':'false')});
  $('#content').innerHTML=({workbench,architecture,capabilities,memory,events:eventView,access,models}[page]||workbench)();
 }
-function act(fn){try{return fn()}catch(e){notice(String(e.message||e),true)}}
+function act(fn){try{const result=fn();if(result&&typeof result.then==='function')return result.catch(e=>notice(String(e.message||e),true));return result}catch(e){notice(String(e.message||e),true)}}
 async function run(replay=false){
  if(busy)return;busy=true;render();
  try{lastRun=replay&&lastRun?await runtime.replay(lastRun.id):await runtime.runGraph(state.graph,draftInput);notice(lastRun.status==='completed'?'Execution completed: '+lastRun.id:'Execution failed: '+lastRun.error,lastRun.status!=='completed')}
