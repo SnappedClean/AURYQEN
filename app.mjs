@@ -1,4 +1,5 @@
 import {createRuntime,DOMAINS} from './runtime.mjs';
+import {createCloudPanel} from './cloud.mjs';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const opt=(value,label,selected=false)=>'<option value="'+esc(value)+'"'+(selected?' selected':'')+'>'+esc(label)+'</option>';
@@ -6,6 +7,7 @@ let page='workbench',selectedNode='n1',selectedDomain='engine',draftInput='   Bu
 let runtime,state;
 function notice(message,error=false){const box=$('#toast');box.textContent=message;box.className=error?'error':'';box.style.display='block';clearTimeout(notice.timer);notice.timer=setTimeout(()=>box.style.display='none',4200)}
 try{runtime=createRuntime(window.localStorage,()=>{state=runtime.snapshot();render()});state=runtime.snapshot()}catch(e){$('#content').textContent='Browser storage is unavailable. Allow site storage or use a normal browser tab: '+e.message;throw e}
+const cloud=createCloudPanel(notice);
 const counts=()=>({capabilities:runtime.capabilities().length,runs:state.runs.length,memory:Object.keys(state.memory).length,events:state.events.length});
 function banner(k,title,desc){return '<div class="hero"><div class="eyebrow">'+esc(k)+'</div><h1>'+esc(title)+'</h1><p>'+esc(desc)+'</p><span class="badge">Local runtime · browser persistent</span></div>'}
 function stats(){const c=counts();return '<div class="stats">'+[['Capabilities',c.capabilities,'Executable operations'],['Executions',c.runs,'Recorded runs'],['Memory keys',c.memory,'Persisted locally'],['Events',c.events,'Actual event records']].map(row=>'<div class="stat"><small>'+row[0]+'</small><strong>'+row[1]+'</strong><p>'+row[2]+'</p></div>').join('')+'</div>'}
@@ -19,7 +21,7 @@ function workbench(){
  const nodeChoices=options.map(c=>opt(c.id,c.name+' ('+c.id+')',node&&node.capability===c.id)).join('');
  const results=lastRun?JSON.stringify({run:lastRun.id,status:lastRun.status,outputs:lastRun.outputs,error:lastRun.error},null,2):'No result yet. Run the graph to execute every connected capability.';
  return banner('01 / EXECUTION WORKBENCH','Make capabilities do work.','This is an executable directed graph. Edit nodes and connections, run real transformations, then inspect recorded outputs and events.')+stats()+
- '<div class="heading"><div><h2>Live capability graph</h2><p>Nodes are executed in dependency order. Branches reuse actual upstream results.</p></div><div class="toolbar"><button id="run" class="primary" '+(busy?'disabled':'')+'>'+(busy?'Running…':'▶ Run graph')+'</button><button id="replay" '+(!lastRun||busy?'disabled':'')+'>↺ Replay run</button></div></div>'+
+ '<div class="heading"><div><h2>Live capability graph</h2><p>Nodes are executed in dependency order. Branches reuse actual upstream results.</p></div><div class="toolbar"><button data-view="cloud">☁ Cloud tasks & ChatGPT relay</button><button id="run" class="primary" '+(busy?'disabled':'')+'>'+(busy?'Running…':'▶ Run graph')+'</button><button id="replay" '+(!lastRun||busy?'disabled':'')+'>↺ Replay run</button></div></div>'+
  '<div class="grid2"><div class="panel"><div class="canvas"><div class="scene"><svg viewBox="0 0 790 315" aria-label="Graph edges">'+path+'</svg>'+nodes+'</div></div><div class="form section"><div><label for="input">Workflow input</label><textarea id="input" maxlength="10000">'+esc(draftInput)+'</textarea></div><div class="row"><select id="add-cap" aria-label="Capability to add">'+options.map(c=>opt(c.id,c.name)).join('')+'</select><button id="add-node">+ Add node</button></div><div class="row"><select id="edge-from" aria-label="Connect from">'+choices+'</select><select id="edge-to" aria-label="Connect to">'+choices+'</select><button id="add-edge">Connect</button></div><div class="split">'+graph.edges.map(e=>'<button class="smallbtn" data-remove-edge="'+esc(e.from+'|'+e.to)+'">× '+esc(e.from)+' → '+esc(e.to)+'</button>').join('')+'</div></div></div>'+
  '<div class="panel"><h3>Selected node / '+esc(node?.id||'—')+'</h3><p>Inspect and configure a real capability invocation.</p><div class="form"><div><label for="edit-cap">Capability</label><select id="edit-cap">'+nodeChoices+'</select></div><div><label for="param-key">Memory key (memory capabilities)</label><input id="param-key" value="'+esc(node?.params?.key||'')+'" placeholder="e.g. project-name"></div><div><label for="param-ms">Wait milliseconds (0–2500)</label><input id="param-ms" type="number" min="0" max="2500" value="'+esc(node?.params?.ms??350)+'"></div><div class="row"><button id="save-node">Save node</button><button id="delete-node" class="danger">Delete node</button></div></div><div class="section"><h3>Current result</h3><pre class="result '+(lastRun?.status==='failed'?'error':'')+'">'+esc(results)+'</pre></div></div></div>'+
  '<div class="grid2 section"><div class="panel"><h3>Recent execution events</h3>'+events(9)+'</div><div class="panel"><h3>Run history</h3><div class="list">'+(state.runs.slice(0,5).map(r=>'<button class="item" data-history="'+esc(r.id)+'"><b>'+esc(r.id)+'</b><small>'+esc(r.status)+' · '+esc(r.time)+' · '+r.graph.nodes.length+' nodes</small></button>').join('')||'<p>No runs yet.</p>')+'</div></div></div>';
@@ -54,11 +56,12 @@ function models(){
  return banner('07 / MODEL LAYER','Model-independent by design.','The AI adapter is intentionally unconfigured in this public build. No key collection, imaginary inference, or hidden third-party account is involved.')+
  '<div class="grid3">'+[['Local inference','Not connected','A future private/local model worker can implement the model contract.'],['Remote inference','Not connected','Provider credentials must stay on a private server, never in GitHub Pages JavaScript.'],['Tool proposals','Architecture defined','Model-suggested actions must go through the engine and permission checks.']].map(x=>'<div class="panel"><span class="badge warn">'+x[1]+'</span><h2>'+x[0]+'</h2><p>'+x[2]+'</p></div>').join('')+'</div><div class="panel section"><h2>What works right now</h2><p>Graphs execute deterministic operations, memory is persisted, new recipes can be tested and approved, and the event stream is real. Connecting an LLM or a multi-user hosted runtime is a separate integration milestone—not a claim made by this website.</p><button data-view="workbench" class="primary">Run the engine</button></div>';
 }
+function cloudView(){return banner('08 / CLOUD CONNECTION','Real execution beyond this browser.','Owner-submitted jobs run on GitHub Actions, and messages can be relayed to ChatGPT through the connected GitHub account. Nothing is installed on your computer.')+cloud.render()}
 function render(){
  if(!state)return;
  $('#crumb').textContent=page.toUpperCase();
  document.querySelectorAll('.nav [data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===page);b.setAttribute('aria-current',b.dataset.view===page?'page':'false')});
- $('#content').innerHTML=({workbench,architecture,capabilities,memory,events:eventView,access,models}[page]||workbench)();
+ $('#content').innerHTML=({workbench,architecture,capabilities,memory,events:eventView,access,models,cloud:cloudView}[page]||workbench)();
 }
 function act(fn){try{const result=fn();if(result&&typeof result.then==='function')return result.catch(e=>notice(String(e.message||e),true));return result}catch(e){notice(String(e.message||e),true)}}
 async function run(replay=false){
@@ -66,12 +69,13 @@ async function run(replay=false){
  try{lastRun=replay&&lastRun?await runtime.replay(lastRun.id):await runtime.runGraph(state.graph,draftInput);notice(lastRun.status==='completed'?'Execution completed: '+lastRun.id:'Execution failed: '+lastRun.error,lastRun.status!=='completed')}
  catch(e){notice(e.message,true)}finally{busy=false;state=runtime.snapshot();render()}
 }
-document.querySelectorAll('.nav [data-view]').forEach(b=>b.addEventListener('click',()=>{page=b.dataset.view;render()}));
+document.querySelectorAll('.nav [data-view]').forEach(b=>b.addEventListener('click',()=>{page=b.dataset.view;render();if(page==='cloud')void cloud.refresh()}));
 $('#content').addEventListener('input',e=>{if(e.target.id==='input')draftInput=e.target.value});
 $('#content').addEventListener('change',e=>{if(e.target.dataset.grant)act(()=>runtime.setGrant(e.target.dataset.grant,e.target.checked))});
 $('#content').addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
- if(b.dataset.view){page=b.dataset.view;render();return}
+ if(b.dataset.view){page=b.dataset.view;render();if(page==='cloud')void cloud.refresh();return}
+ if(b.dataset.cloud){act(()=>cloud.action(b));return}
  if(b.dataset.domain){selectedDomain=b.dataset.domain;render();return}
  if(b.dataset.node){selectedNode=b.dataset.node;render();return}
  if(b.dataset.history){lastRun=state.runs.find(r=>r.id===b.dataset.history);render();return}
