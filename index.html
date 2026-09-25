@@ -40,7 +40,7 @@ input,select,textarea{background:#151b22;border-color:#3a424c;font-size:12px}
 .board{width:1120px;height:620px}.wires{width:1120px;height:620px}.wire{stroke:#9d87e3;stroke-width:1.7}.wire.active{stroke:#a18cf0}.node{width:164px;min-height:99px;border-radius:11px;background:linear-gradient(150deg,#1b262c,#192229);border:1px solid #536875;box-shadow:0 12px 30px #0005;overflow:visible}
 .node.selected{border:1.5px solid #c0a1ff;box-shadow:0 0 0 2px #ae87ff14,0 13px 32px #0006}
 .node.off{opacity:.62}.nodehead{padding:12px 12px 7px;border-bottom:0;font-size:10px;gap:7px;line-height:1.2}.nodehead span:first-child{font-size:19px}.nodebody{padding:0 12px 12px;color:#e0e5ea;font-size:10px;line-height:1.65}.nodebody strong{font-size:11px;font-weight:650}
-.node[data-kind="business"]{background:linear-gradient(135deg,#1a2933,#17242e);border-color:#39bde3}.node[data-kind="offer"]{background:linear-gradient(130deg,#292038,#211d2e);border-color:#a77aeb}.node[data-kind="demand"]{background:linear-gradient(130deg,#1b2d2c,#1b2627);border-color:#36bc9e}.node[data-kind="time"]{background:linear-gradient(130deg,#1d273b,#182434);border-color:#649ceb}.node[data-kind="variable"]{background:linear-gradient(130deg,#30251f,#29211e);border-color:#eb895f}.node[data-kind="expense"]{background:linear-gradient(130deg,#2f2130,#29202b);border-color:#d37bae}.node[data-kind="result"]{background:linear-gradient(130deg,#19302c,#1b2926);border-color:#2edaa4}.node[data-kind="outcome"]{background:linear-gradient(130deg,#18242c,#19242d);border-color:#4ac4e0}.node[data-kind="growth"]{background:linear-gradient(130deg,#1c292c,#182428);border-color:#67b8da}
+.node[data-kind="business"]{background:linear-gradient(135deg,#1a2933,#17242e);border-color:#39bde3}.node[data-kind="offer"]{background:linear-gradient(130deg,#292038,#211d2e);border-color:#a77aeb}.node[data-kind="demand"]{background:linear-gradient(130deg,#1b2d2c,#1b2627);border-color:#36bc9e}.node[data-kind="time"]{background:linear-gradient(130deg,#1d273b,#182434);border-color:#649ceb}.node[data-kind="variable"]{background:linear-gradient(130deg,#30251f,#29211e);border-color:#eb895f}.node[data-kind="expense"]{background:linear-gradient(130deg,#2f2130,#29202b);border-color:#d37bae}.node[data-kind="result"]{background:linear-gradient(130deg,#19302c,#1b2926);border-color:#2edaa4}.node[data-kind="outcome"]{background:linear-gradient(130deg,#18242c,#19242d);border-color:#4ac4e0}.node[data-kind="growth"]{background:linear-gradient(130deg,#1c292c,#182428);border-color:#67b8da}.node[data-kind="outcome"],.node[data-kind="growth"]{width:124px}
 .port{width:8px;height:8px;border:0;background:#85aeff}.port.out{background:#43ddaa}.port.in{left:-4px}.port.out{right:-4px}
 .canvashelp{top:570px;left:10px;background:#171f28cf;border-color:#2e3742;color:#99a6b6;font-size:10px}
 .inspector{background:#171c21;padding:15px 15px 10px;scrollbar-color:#3c4650 transparent}
@@ -136,21 +136,21 @@ var selected='offer1',db,run=null,timer=null,paused=false,zoom=1,mode='results',
 function example(){
  return {id:uid(),name:'My Online Coaching Business',settings:{months:12,startingCash:2500,startupCost:400,ownerHoursWeek:40,staffHoursWeek:80,payrollBurden:12,taxReserve:20,travelSpeed:28,seasonality:0},nodes:[
  {id:'business',type:'business',x:10,y:230,name:'Business'},
- {id:'offer1',type:'offer',x:196,y:230,name:'1:1 Coaching Session',channel:'digital',price:150,quantity:10,frequency:'week',growth:5,ownerHours:1,staffHours:.5,wage:20,materials:2,miles:0,mpg:25,fuel:3.5,processing:3,processingFlat:0},
- {id:'demand',type:'parameter',kind:'demand',source:'offer1',x:386,y:80,name:'Demand / Frequency'},
- {id:'time',type:'parameter',kind:'time',source:'offer1',x:386,y:369,name:'Time / Labor'},
- {id:'variable',type:'parameter',kind:'variable',source:'offer1',x:577,y:232,name:'Costs (Variable)'},
- {id:'fixed2',type:'expense',x:578,y:434,name:'Marketing',monthly:250,escalation:0},
- {id:'result',type:'result',x:766,y:231,name:'Revenue & Profit'},
- {id:'cash',type:'outcome',kind:'cash',x:955,y:354,name:'Cash Flow'},
- {id:'growth',type:'parameter',kind:'growth',source:'offer1',x:955,y:486,name:'Growth'}],
+ {id:'offer1',type:'offer',x:176,y:230,name:'1:1 Coaching Session',channel:'digital',price:150,quantity:10,frequency:'week',growth:5,ownerHours:1,staffHours:.5,wage:20,materials:2,miles:0,mpg:25,fuel:3.5,processing:3,processingFlat:0},
+ {id:'demand',type:'parameter',kind:'demand',source:'offer1',x:346,y:80,name:'Demand / Frequency'},
+ {id:'time',type:'parameter',kind:'time',source:'offer1',x:346,y:369,name:'Time / Labor'},
+ {id:'variable',type:'parameter',kind:'variable',source:'offer1',x:516,y:232,name:'Costs (Variable)'},
+ {id:'fixed2',type:'expense',x:526,y:434,name:'Marketing',monthly:250,escalation:0},
+ {id:'result',type:'result',x:690,y:231,name:'Revenue & Profit'},
+ {id:'cash',type:'outcome',kind:'cash',x:868,y:354,name:'Cash Flow'},
+ {id:'growth',type:'parameter',kind:'growth',source:'offer1',x:868,y:486,name:'Growth'}],
  edges:[{from:'business',to:'offer1'},{from:'offer1',to:'demand'},{from:'offer1',to:'time'},{from:'demand',to:'result'},{from:'time',to:'variable'},{from:'variable',to:'result'},{from:'fixed2',to:'result'},{from:'result',to:'cash'},{from:'result',to:'growth'}]};
 }
 
 function storageLoad(){try{
  var old=localStorage.getItem(OLDKEY);if(old&&!localStorage.getItem(ARCHIVE)){localStorage.setItem(ARCHIVE,old);localStorage.removeItem(OLDKEY)}
  var value=JSON.parse(localStorage.getItem(KEY)||'null');
- if(value&&Array.isArray(value.scenarios)&&value.scenarios.length&&value.scenarios.every(validScenario)){return value}
+ if(value&&Array.isArray(value.scenarios)&&value.scenarios.length&&value.scenarios.every(validScenario)){if(value.scenarios.length===1&&value.scenarios[0].name==='Mobile Detailing — Example'&&!localStorage.getItem('bizbench-coaching-demo-offered-v1')){var newDemo=example();value.scenarios.push(newDemo);value.active=newDemo.id;localStorage.setItem('bizbench-coaching-demo-offered-v1','1')}return value}
 }catch(e){console.warn('Storage load failed',e)}
  var first=example();return {version:1,active:first.id,scenarios:[first]};
 }
