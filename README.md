@@ -1,65 +1,32 @@
-# AURYQEN — public capability workspace
+# AURYQEN — omnidirectional capability platform
 
-AURYQEN is a general-purpose capability architecture for execution, intelligence, memory, eventing, permissions and interfaces. This public repository contains the **GitHub Pages control surface and a real, bounded browser-side runtime**. It does **not** contain the private Python/SQLite prototype, private data, API credentials, or a publicly deployed backend.
+AURYQEN is a general-purpose capability architecture for execution, intelligence, memory, eventing, permissions, and interfaces. **The source for both the public browser workspace and the executable Python/SQLite core is public in this repository.** Credentials, personal data, and live databases must never be committed.
 
-## Use the site
+## Two ways to run it
 
-Once GitHub Pages is enabled with **Settings → Pages → Build and deployment → Source: GitHub Actions**, the workflow in [.github/workflows/pages.yml](.github/workflows/pages.yml) publishes the static app. It requires no paid hosting, API key, package install, or build step.
+**Public GitHub Pages:** [Open AURYQEN](https://snappedclean.github.io/AURYQEN/). Its browser-side runtime executes bounded graphs, persists browser-local state, records events, and supports tested recipes. GitHub Pages is static: it cannot run a persistent server or host model secrets.
 
-The public runtime actually:
-- executes validated directed acyclic capability graphs, with branching and explicit type errors;
-- exposes built-in text, JSON, memory and bounded waiting capabilities;
-- records run, node, permission, recipe and memory events;
-- persists this browser workspace using origin-scoped localStorage;
-- enforces local grants for workflow execution, memory operations and recipe publication;
-- lets you compose fixed-operation recipes, prove an exact test result, approve and reuse them;
-- stores run snapshots and replays old graphs as new executions;
-- offers an interactive architecture inspector with real local runtime counts;
-- exports local workspace data as JSON.
+**Local core:** See [core/README.md](core/README.md). Run `cd core && python3 http_server.py`, then open `http://127.0.0.1:8765/`. The local interface can invoke real permitted capabilities, store task/conversation records and events in SQLite, request owner approval for memory writes, and display native chat with an honest unconfigured state if no model is attached. The [MCP adapter](core/docs/MCP.md) shares the exact same Core.submit execution path.
 
-Try this: open **Workbench**, click **Run graph**, inspect output and the **Event Stream**, disable **workflow.run** under **Permissions** and try again. Then enable **recipe.publish**, go to **Capabilities**, and test/publish the default recipe.
+The source is openly visible, but your installed runtime operates on your computer. No server has been deployed by merely publishing this code.
 
-## Limitations and trust boundaries
+## Architecture and verification
 
-This is an actual small runtime, **not the finished AURYQEN platform**. The GitHub Pages site is static; it cannot privately hold API keys or execute the separate Python backend. The **AI Models** view correctly reports no connected model. There is no hosted multi-user authentication, external connector execution, remote scheduler, system-wide event broker, cross-device sync, isolated arbitrary code runner, or online persistence. Do not put confidential information into public-site browser storage.
+- `runtime.mjs`, `app.mjs`: dependency-free, browser-only capability workbench.
+- `core/core.py`: persistent capability execution, grant and approval checks, tasks, memory, conversations, SQLite events.
+- `core/model_adapter.py`: optional OpenAI-compatible model adapter; model tool proposals go through the same core. No provider is configured by default.
+- `core/mcp_server.py`: local MCP stdio tools through the same core. Not a remotely hosted ChatGPT connector yet.
+- `core/http_server.py` and `core/ui/`: loopback-only web interface for the persistent core.
+- `core/tests/`: tests of persistence, grants, owner approval, MCP, model proposal, and shared execution.
 
-The browser grants demonstrate authorization within the local application; they are **not** security against someone controlling their own browser. A future private service must authenticate and authorize every request and action independently. Never add keys, bearer tokens, private database files or secrets to this public repository.
+Run `npm test` and `npm run check` for the public client. Run `cd core && python3 -m unittest discover -s tests -v` for the core. GitHub Actions verifies both, then publishes **only the static client files** to Pages.
 
-The existing, separately maintained local Python/SQLite prototype remains private. It contains capabilities, graph execution, Forge, persistent events, local-only HTTP endpoints and its own tests. This repository deliberately does not publish it merely because the website requires public visibility.
+## Security and scope
 
-## Run locally and test
+Do not put secrets into the public Pages app, upload live SQLite database files, or port-forward the loopback core. Local browser permission toggles are not multi-user authentication. Real remote ChatGPT-to-AURYQEN access requires independently secured hosting, HTTPS and authorization; native Auryqen chat requires a separately configured model endpoint. No AI model, paid API or remote MCP service is silently connected.
 
-Open a terminal from a clone and serve this directory via a local static server:
-
-~~~bash
-python3 -m http.server 8000
-~~~
-
-Open \`http://127.0.0.1:8000\`. ES module imports will not work reliably through a \`file://\` URL.
-
-No dependencies are required for the automated runtime checks:
-
-~~~bash
-npm test
-npm run check
-~~~
-
-Node 20+ is recommended. The Pages workflow runs the tests before deploying.
-
-## Architecture
-
-| Domain | Public implementation |
-|---|---|
-| Execution engine | Graph validator, topological execution, replay, status and results |
-| Capabilities | Built-ins and bounded, approved transformation recipes |
-| Memory | Browser-local keyed persistence |
-| Permissions | Local operation grants and denial events |
-| Event system | Actual bounded append-only client event log |
-| Interfaces | Workbench, Forge, history, inspector and architecture view |
-| AI models | Interface placeholder, **not connected** |
-
-Private services can later implement the same capabilities behind authenticated APIs without publishing their implementation or credentials.
+This is a functional foundation, not the completed general-purpose platform. See [SECURITY.md](SECURITY.md) and [core/README.md](core/README.md).
 
 ## Ownership
 
-Copyright © 2026 AURYQEN project. All rights reserved. This public repository is viewable for GitHub Pages; **no open-source license is granted** by default. Public visibility alone is not permission to reuse the source.
+Copyright © 2026 AURYQEN project. All rights reserved. Public source visibility does not itself grant an open-source license.
