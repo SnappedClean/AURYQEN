@@ -1,0 +1,13 @@
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+node_modules/
+dist/
+__pycache__/
+.DS_Store
