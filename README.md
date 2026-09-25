@@ -10,6 +10,14 @@ AURYQEN is a general-purpose capability architecture for execution, intelligence
 
 The source is openly visible, but your installed runtime operates on your computer. No server has been deployed by merely publishing this code.
 
+## Cloud execution — no local installation
+
+Open the deployed site and choose **Cloud & ChatGPT**. The site prepares a GitHub Issue containing a bounded public task. After you submit it while signed into your GitHub account, [AURYQEN cloud task](.github/workflows/cloud-task.yml) executes it on a GitHub-hosted runner, then writes its actual result into a comment. Refresh the page to retrieve the result from GitHub. No software runs on your computer beyond the browser; no local server is required for this flow. It is an intentionally small cloud executor, **not** the full persistent Auryqen backend. Only issues authored by the repository owner are executed. Public GitHub issues/comments are not suitable for confidential information.
+
+Available cloud operations: text normalization, uppercase, word counting, slugging, and JSON formatting. No shell commands, project/file access, or AI model are exposed by this public runner. Browser workbench tasks still execute in the browser.
+
+The **ChatGPT handoff** creates a separate public issue. In ChatGPT, ask the connected GitHub-enabled assistant to check the Auryqen inbox (or paste the issue link). Its replies can appear in the public GitHub thread and on the website after refresh. This is a transparent, **manually initiated relay**, not autonomous or embedded ChatGPT. A fully automatic, private two-way conversation requires an authorized hosted model service and authenticated remote MCP integration; a ChatGPT subscription is not a free embeddable model API. Nothing in this project installs local software or starts a paid service automatically.
+
 ## Architecture and verification
 
 - `runtime.mjs`, `app.mjs`: dependency-free, browser-only capability workbench.
