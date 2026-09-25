@@ -1,4 +1,4 @@
-name: Verify and deploy AURYQEN
+name: Verify and deploy BizBench
 on:
   push:
     branches: [main]
@@ -18,18 +18,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check syntax and run runtime tests
+      - name: Check BizBench inline JavaScript syntax
         run: |
-          npm run check
-          npm test
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Verify local core, MCP, and conversation adapter
-        run: |
-          cd core
-          python -m py_compile core.py http_server.py mcp_server.py model_adapter.py
-          python -m unittest discover -s tests -v
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Extract(HTMLParser):
+              inside = False
+              scripts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == "script" and not dict(attrs).get("src"):
+                      self.inside = True
+              def handle_endtag(self, tag):
+                  if tag == "script": self.inside = False
+              def handle_data(self, data):
+                  if self.inside: self.scripts.append(data)
+          parser = Extract()
+          parser.feed(Path("index.html").read_text(encoding="utf-8"))
+          assert parser.scripts, "BizBench script missing"
+          Path("/tmp/bizbench-check.js").write_text("\n".join(parser.scripts), encoding="utf-8")
+          PY
+          node --check /tmp/bizbench-check.js
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -41,10 +50,10 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Stage public files only
+      - name: Stage BizBench public app
         run: |
           mkdir -p dist
-          cp index.html app.mjs cloud.mjs runtime.mjs style.css README.md dist/
+          cp index.html dist/
           touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
