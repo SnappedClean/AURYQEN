@@ -3,7 +3,7 @@ import {createCloudPanel} from './cloud.mjs';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const opt=(value,label,selected=false)=>'<option value="'+esc(value)+'"'+(selected?' selected':'')+'>'+esc(label)+'</option>';
-let page='workbench',selectedNode='n1',selectedDomain='engine',draftInput='   Build something REAL with Auryqen!   ',lastRun=null,memoryResult='',busy=false;
+let page='cloud',selectedNode='n1',selectedDomain='engine',draftInput='   Build something REAL with Auryqen!   ',lastRun=null,memoryResult='',busy=false;
 let runtime,state;
 function notice(message,error=false){const box=$('#toast');box.textContent=message;box.className=error?'error':'';box.style.display='block';clearTimeout(notice.timer);notice.timer=setTimeout(()=>box.style.display='none',4200)}
 try{runtime=createRuntime(window.localStorage,()=>{state=runtime.snapshot();render()});state=runtime.snapshot()}catch(e){$('#content').textContent='Browser storage is unavailable. Allow site storage or use a normal browser tab: '+e.message;throw e}
@@ -56,10 +56,11 @@ function models(){
  return banner('07 / MODEL LAYER','Model-independent by design.','The AI adapter is intentionally unconfigured in this public build. No key collection, imaginary inference, or hidden third-party account is involved.')+
  '<div class="grid3">'+[['Local inference','Not connected','A future private/local model worker can implement the model contract.'],['Remote inference','Not connected','Provider credentials must stay on a private server, never in GitHub Pages JavaScript.'],['Tool proposals','Architecture defined','Model-suggested actions must go through the engine and permission checks.']].map(x=>'<div class="panel"><span class="badge warn">'+x[1]+'</span><h2>'+x[0]+'</h2><p>'+x[2]+'</p></div>').join('')+'</div><div class="panel section"><h2>What works right now</h2><p>Graphs execute deterministic operations, memory is persisted, new recipes can be tested and approved, and the event stream is real. Connecting an LLM or a multi-user hosted runtime is a separate integration milestone—not a claim made by this website.</p><button data-view="workbench" class="primary">Run the engine</button></div>';
 }
-function cloudView(){return banner('08 / CLOUD CONNECTION','Real execution beyond this browser.','Owner-submitted jobs run on GitHub Actions, and messages can be relayed to ChatGPT through the connected GitHub account. Nothing is installed on your computer.')+cloud.render()}
+function cloudView(){return '<section class="cloud-hero"><div class="eyebrow">AURYQEN / CLOUD CONTROL CENTER · V0.3</div><h1>Your capability platform, <em>now with cloud execution.</em></h1><p>Run an actual task on GitHub infrastructure or leave a public message for ChatGPT to review. This is a working handoff—not an embedded AI or a private cloud account.</p><div class="cloud-status"><span><b>✓</b> GitHub runner · verified</span><span><b>✓</b> Task results · recorded</span><span><b>↗</b> ChatGPT · manual relay</span><span class="muted"><b>○</b> Live AI chat · not connected</span></div><div class="cloud-hero-actions"><button class="primary" data-cloud="refresh">↻ Load live activity</button><button data-view="workbench">Open browser Workbench →</button><a href="https://github.com/SnappedClean/AURYQEN" target="_blank" rel="noopener noreferrer">View source ↗</a></div></section>'+cloud.render()}
 function render(){
  if(!state)return;
- $('#crumb').textContent=page.toUpperCase();
+ $('#crumb').textContent=(page==='cloud'?'CLOUD CONSOLE':page.toUpperCase());
+ const runtimeBadge=$('#runtime-status');if(runtimeBadge)runtimeBadge.textContent=page==='cloud'?'● GITHUB CLOUD RUNNER':'● BROWSER RUNTIME';
  document.querySelectorAll('.nav [data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===page);b.setAttribute('aria-current',b.dataset.view===page?'page':'false')});
  $('#content').innerHTML=({workbench,architecture,capabilities,memory,events:eventView,access,models,cloud:cloudView}[page]||workbench)();
 }
@@ -94,3 +95,4 @@ $('#content').addEventListener('click',e=>{
 });
 $('#export').addEventListener('click',()=>act(()=>{const data=runtime.exportState(),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='auryqen-workspace.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notice('Workspace JSON exported')}));
 render();
+void cloud.refresh();
